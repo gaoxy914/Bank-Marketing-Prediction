@@ -9,16 +9,22 @@ import math
 import random
 import pickle
 
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import f1_score
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+
 random.seed(0)
 
 def rand(a, b):
     return (b - a)*random.random() + a
 
 def sigmoid(x):
-    return math.tanh(x)
+    return 1.0/(1.0 + math.exp(-x))
 
 def dsigmoid(y):
-    return 1.0 - y**2
+    return y*(1 - y)
 
 class Unit:
     def __init__(self, length):
@@ -122,8 +128,35 @@ class BPNN:
             self.hlayer.set_weights(weights["hlayer"])
     
     def test(self, data, label):
+        label_pred = []
+        min = 0
+        max = 1
         for x, y in zip(data, label):
-            print(x, '->', self.calc(x), y)
+            pred = self.calc(x)[0]
+            if y == 1:
+                if pred < min:
+                    min = pred
+            else:
+                if pred > max:
+                    max = pred
+            if (pred > 0.99):
+                label_pred.append(1)
+            else:
+                label_pred.append(0)
+        print('min: ', min)
+        print('max: ', max)
+        acc = accuracy_score(label, label_pred)
+        print('Test Dataset accuracy: ', acc)
+        roc = roc_auc_score(label, label_pred)
+        print('Test Dataset AUC: ', roc)
+        f1 = f1_score(label, label_pred)
+        print('Test Dataset f1_score: ', f1)
+        print(classification_report(label, label_pred))
+        print()
+        print('Cofusion Matrix: ')
+        print(confusion_matrix(label, label_pred))
+        print()
+    
 def demo():
     # Teach network XOR function
     X = [
@@ -142,7 +175,7 @@ def demo():
     n.test(X, Y)
 
 if __name__=='__main__':
-    pass
+    demo()
         
         
         

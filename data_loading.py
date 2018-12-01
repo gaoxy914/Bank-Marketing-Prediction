@@ -8,11 +8,13 @@ Created on Thu Nov 29 19:23:02 2018
 import numpy as np
 import pandas as pd
 
+from imblearn.over_sampling import SMOTE
+
 from sklearn import preprocessing
 
 from sklearn.preprocessing import Imputer
-from sklearn.preprocessing import StandardScaler
-
+from sklearn.preprocessing import StandardScaler   
+        
 def load_training_data(path):
     data = pd.read_csv(path,delimiter=';')
     #print(data.shape)
@@ -56,6 +58,7 @@ def load_training_data(path):
     #print(D.shape)
     X = D[:, 0:57]
     Y = D[:, 57]
+    #Y = Y.reshape(-1, 1)
     #normalize
     ss = StandardScaler()
     ss.fit(X[:, 47:51])
@@ -64,7 +67,15 @@ def load_training_data(path):
     ss.fit(X[:, 52:])
     scaler = ss.transform(X[:, 52:])
     X[:, 52:] = scaler
-    return X, Y
+    X, Y = SMOTE().fit_sample(X, Y)
+    positive = 0
+    negative = 0
+    for i in range(Y.shape[0]):
+        if (Y[i] == 0):
+            negative = negative + 1
+        else:
+            positive = positive + 1
+    return X, Y, positive, negative
 
 def load_testing_data(path):
     data = pd.read_csv(path,delimiter=';')
@@ -94,6 +105,7 @@ def load_testing_data(path):
     #print(D.shape)
     X = D[:, 0:57]
     Y = D[:, 57]
+    #Y = Y.reshape(-1, 1)
     #normalize
     ss = StandardScaler()
     ss.fit(X[:, 47:51])
@@ -105,10 +117,10 @@ def load_testing_data(path):
     return X, Y
 
 if __name__=='__main__':
+    X, Y, p, n = load_training_data('bank-additional/bank-additional.csv')
+    print(p, n)
     '''
-    X, Y = load_training_data('bank-additional/bank-additional.csv')
-    print(X[1], Y[1])
     test_data, test_lable = load_testing_data('bank-additional/bank-additional.csv')
     print(test_data[1], test_lable[1])
     '''
-    pass
+    #pass
